@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler';
 import React, { Component } from 'react';
 import {
   StyleSheet,
@@ -8,9 +9,11 @@ import {
   StatusBar,
   SafeAreaView,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  TouchableOpacity
 } from 'react-native';
-
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
@@ -18,22 +21,60 @@ import {
 import Video from 'react-native-video';
 import { api } from './api';
 
-class Card extends Component {
+const Stack = createStackNavigator();
+
+class VideoPlayPage extends Component {
+  componentDidMount() {
+    console.log(api.videoPlay + this.props.route.params.videoPath);
+  }
   render() {
     return (
-      <View style={[styles.sectionContainer, { backgroundColor: Colors.lighter }]}>
-        <Image style={{ height: 200 }} source={{ uri: 'http://127.0.0.1:8080/video?name=download/cover/Oct20_30_2217029.jpg' }}>
-          {/* source={{ uri: api.videoPlay + this.props.coverPath }} */}
-        </Image>
-        <Text style={[styles.sectionTitle, styles.centers]}>
-          {this.props.description}
-        </Text>
-      </View>
+      <>
+        <Video source={{ uri: api.videoPlay + this.props.route.params.videoPath }}
+          style={styles.backgroundVideo}
+          rate={1} volume={1} muted={true}
+          resizeMode="cover" repeat={true} key="video1" />
+      </>
     );
   }
 }
 
-class App extends Component {
+class Card extends Component {
+  static navigationOptions = ({ navigation }) => {
+    return {
+      header: null,
+      tabBarVisible: false,
+    }
+  };
+  componentDidMount() {
+    console.log(this.props.videoPath);
+    console.log(this.props.coverPath);
+    console.log(this.props.description);
+  }
+  render() {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => {
+          this.props.navigation.navigate('Video', {
+            videoPath: this.props.videoPath
+          })
+        }}
+      >
+        <View style={[styles.sectionContainer, { backgroundColor: Colors.lighter }]}>
+          <Image style={{ height: 200 }} source={{ uri: 'http://127.0.0.1:8080/video?name=download/cover/Oct20_30_2217029.jpg' }}>
+            {/* source={{ uri: api.videoPlay + this.props.coverPath }} */}
+          </Image>
+          <Text style={[styles.sectionTitle, styles.centers]}>
+            {this.props.description}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+}
+
+class HomeScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -78,16 +119,11 @@ class App extends Component {
               <RefreshControl refreshing={this.state.refreshing} onRefresh={this._onRefresh} />
             }
           >
-
-            {/* <Video source={require('./background.mp4')}
-            style={styles.backgroundVideo}
-            rate={1} volume={1} muted={true}
-            resizeMode="cover" repeat={true} key="video1" /> */}
             {
               this.state && this.state.dataSource ?
                 <View style={{ flex: 1, backgroundColor: '#fff' }}>
                   {this.state.dataSource.map((value, index) => {
-                    return <Card key={index} description={value["description"]} cover={value["coverPath"]}></Card>
+                    return <Card key={index} navigation={this.props.navigation} description={value["description"]} coverPath={value["coverPath"]} videoPath={value["videoPath"]}></Card>
                   })}
                 </View> :
                 <View style={styles.indicatorStyle}>
@@ -97,6 +133,20 @@ class App extends Component {
           </ScrollView>
         </SafeAreaView>
       </>
+    );
+  }
+}
+
+
+class App extends Component {
+  render() {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Video" component={VideoPlayPage} />
+        </Stack.Navigator>
+      </NavigationContainer>
     );
   }
 }
