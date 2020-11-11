@@ -24,16 +24,37 @@ import { api } from './api';
 const Stack = createStackNavigator();
 
 class VideoPlayPage extends Component {
+  state = {
+    rate: 1,
+    volume: 1,
+    muted: false,
+    resizeMode: 'contain',
+    duration: 0.0,
+    currentTime: 0.0,
+    paused: false,
+  };
+
   componentDidMount() {
     console.log(api.videoPlay + this.props.route.params.videoPath);
   }
+  //  source={ require('./background.mp4') }
+  //source={{ uri: api.videoPlay + this.props.route.params.videoPath }}
+  //source={{ uri: 'http://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4' }}
+
   render() {
     return (
       <>
-        <Video source={{ uri: api.videoPlay + this.props.route.params.videoPath }}
+        <Video
+          source={{ uri: api.videoPlay + this.props.route.params.videoPath }}
           style={styles.backgroundVideo}
-          rate={1} volume={1} muted={true}
-          resizeMode="cover" repeat={true} key="video1" />
+          ref={(ref) => {
+            this.player = ref
+          }}
+          rate={this.state.rate}
+          paused={this.state.paused}
+          volume={this.state.volume}
+          muted={this.state.muted}
+          resizeMode={this.state.resizeMode} />
       </>
     );
   }
@@ -47,9 +68,7 @@ class Card extends Component {
     }
   };
   componentDidMount() {
-    console.log(this.props.videoPath);
-    console.log(this.props.coverPath);
-    console.log(this.props.description);
+    console.log(this.props.metadata);
   }
   render() {
     return (
@@ -57,16 +76,16 @@ class Card extends Component {
         activeOpacity={0.5}
         onPress={() => {
           this.props.navigation.navigate('Video', {
-            videoPath: this.props.videoPath
+            videoPath: this.props.metadata['name']
           })
         }}
       >
         <View style={[styles.sectionContainer, { backgroundColor: Colors.lighter }]}>
-          <Image style={{ height: 200 }} source={{ uri: 'http://127.0.0.1:8080/video?name=download/cover/Oct20_30_2217029.jpg' }}>
+          <Image style={{ height: 200 }} source={{ uri: api.getCover + this.props.metadata['name'] }}>
             {/* source={{ uri: api.videoPlay + this.props.coverPath }} */}
           </Image>
           <Text style={[styles.sectionTitle, styles.centers]}>
-            {this.props.description}
+            {this.props.metadata['description']}
           </Text>
         </View>
       </TouchableOpacity>
@@ -123,7 +142,7 @@ class HomeScreen extends Component {
               this.state && this.state.dataSource ?
                 <View style={{ flex: 1, backgroundColor: '#fff' }}>
                   {this.state.dataSource.map((value, index) => {
-                    return <Card key={index} navigation={this.props.navigation} description={value["description"]} coverPath={value["coverPath"]} videoPath={value["videoPath"]}></Card>
+                    return <Card key={index} navigation={this.props.navigation} metadata={value}></Card>
                   })}
                 </View> :
                 <View style={styles.indicatorStyle}>
