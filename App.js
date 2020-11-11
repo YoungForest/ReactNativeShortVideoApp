@@ -17,7 +17,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
-
 import Video from 'react-native-video';
 import { api } from './api';
 
@@ -45,7 +44,9 @@ class VideoPlayPage extends Component {
     return (
       <>
         <Video
-          source={{ uri: api.videoPlay + this.props.route.params.videoPath }}
+          source={{
+            uri: api.videoPlay + this.props.route.params.videoPath,
+          }}
           style={styles.backgroundVideo}
           ref={(ref) => {
             this.player = ref
@@ -82,7 +83,6 @@ class Card extends Component {
       >
         <View style={[styles.sectionContainer, { backgroundColor: Colors.lighter }]}>
           <Image style={{ height: 200 }} source={{ uri: api.getCover + this.props.metadata['name'] }}>
-            {/* source={{ uri: api.videoPlay + this.props.coverPath }} */}
           </Image>
           <Text style={[styles.sectionTitle, styles.centers]}>
             {this.props.metadata['description']}
@@ -111,7 +111,8 @@ class HomeScreen extends Component {
   }
 
   fetchData() {
-    fetch(api.videoRecommend).then((response) => response.json())
+    fetch(api.videoRecommend)
+      .then((response) => response.json())
       .then((data) => {
         console.log(data);
         for (let item in data) {
